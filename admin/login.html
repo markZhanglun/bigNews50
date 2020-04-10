@@ -31,13 +31,68 @@
       <form class="login_form">
         <i class="iconfont icon-user"></i>
         <i class="iconfont icon-key"></i>
-        <input type="text" class="input_txt" placeholder="邮箱/手机号" />
-        <input type="password" class="input_pass" placeholder="密码" />
+        <input type="text" class="input_txt" placeholder="邮箱/手机号" value="zl" />
+        <input type="password" class="input_pass" placeholder="密码" value="123456" />
         <input type="submit" class="input_sub" value="登 录" />
       </form>
     </div>
   </div>
-
+  <!-- 模态框 -->
+  <div class="modal fade" tabindex="-1" role="dialog" id="myModal">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+              aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title">Modal title</h4>
+        </div>
+        <div class="modal-body">
+          <p>One fine body&hellip;</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">确定</button>
+          <!-- <button type="button" class="btn btn-primary">Save changes</button> -->
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
 </body>
+<script>
+  $(function () {
+    $('.input_sub').click(function (e) {
+      e.preventDefault();
+      var username = $('.input_txt').val().trim();
+      var password = $('.input_pass').val().trim();
+      if (username == '' || password == '') {
+        $('.modal-body>p').text('账号密码不能为空');
+        $('#myModal').modal();
+        return;
+      }
+      $.ajax({
+        type: 'post',
+        url: 'http://localhost:8080/api/v1/admin/user/login',
+        data: {
+          username: username,
+          password, password
+        },
+        success: function (backData) {
+          console.log(backData);
+          if (backData.code == 200) {
+            $('.modal-body>p').text('登录成功');
+            $('#myModal').modal();
+            $('#myModal').on('hidden.bs.modal', function (e) {
+              localStorage.setItem('token', backData.token);
+              window.location.href = 'index.html';
+            })
+          } else {
+            $('.modal-body>p').text('登录失败，账号或密码错误');
+            $('#myModal').modal();
+          }
+
+        }
+      })
+    })
+  })
+</script>
 
 </html>
