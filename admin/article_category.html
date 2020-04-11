@@ -171,7 +171,7 @@
                         if (backData.code == 200) {
                             alert('编辑成功');
                             $('#myModal').modal('hide');
-                            window.location.reload();
+                            getData();
                         } else {
                             alert(backData.msg);
                         };
@@ -192,7 +192,7 @@
                     if (confirm('是否删除？')) {
                         if (backData.code == 204) {
                             alert('删除成功');
-                            window.location.reload();
+                            getData();
                         } else {
                             alert(backData.msg);
                         }
