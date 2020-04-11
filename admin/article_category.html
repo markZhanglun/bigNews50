@@ -63,6 +63,7 @@
                 </div>
                 <div class="modal-body">
                     <form>
+                        <input type="hidden" name="cateId" id="cateId">
                         <div class="form-group">
                             <label for="recipient-name" class="control-label">分类名称:</label>
                             <input type="text" class="form-control" id="recipient-name">
@@ -87,7 +88,7 @@
                         <td>{{v.name}}</td>
                         <td>{{v.slug}}</td>
                         <td class="text-center">
-                            <a href="javascript:void(0)" data-toggle="modal" class=" btn btn-info btn-xs" data-target="#myModal">编辑</a>
+                            <a href="javascript:void(0)" data-toggle="modal" class=" btn btn-info btn-xs" data-target="#myModal" v-id={{v.id}}>编辑</a>
                             <a href="javascript:void(0)" class="btn btn-danger btn-xs" v-id={{v.id}}>删除</a>
                         </td>
                     </tr>
@@ -95,18 +96,21 @@
 </script>
 <script>
     $(function () {
-        $.ajax({
-            type: 'get',
-            url: BigNew.category_list,
-            success: function (backData) {
-                console.log(backData);
-                if (backData.code == 200) {
-                    var wzHtml = template('wzlb', backData);
-                    $('tbody').html(wzHtml);
-                }
+        function getData() {
+            $.ajax({
+                type: 'get',
+                url: BigNew.category_list,
+                success: function (backData) {
+                    console.log(backData);
+                    if (backData.code == 200) {
+                        var wzHtml = template('wzlb', backData);
+                        $('tbody').html(wzHtml);
+                    }
 
-            }
-        })
+                }
+            })
+        }
+        getData();
 
         // 判断是新增分类弹出还是编辑弹出
         // shown.bs.modal 此事件在模态框已经显示出来（并且同时在 CSS 过渡效果完成）之后被触发。如果是通过点击某个作为触发器的元素
@@ -115,13 +119,86 @@
             console.log(e.relatedTarget);//通过这个方法就可以知道是谁弹出的模态框
             if (e.relatedTarget === $('#xinzengfenlei')[0]) {
                 $('#myModalLabel').text('新增分类');
-                $('#add_edit').text('新增').addClass('btn-default').removeClass('btn-success');
+                $('#add_edit').text('新增').addClass('btn-primary').removeClass('btn-success');
                 add_edit
             } else {
                 $('#myModalLabel').text('编辑分类');
-                $('#add_edit').text('编辑').addClass('btn-success').removeClass('btn-default');
+                $('#add_edit').text('编辑').addClass('btn-success').removeClass('btn-primary');
+                $('#recipient-name').val($(e.relatedTarget).parent().prev().prev().text().trim());
+                $('#message-text').val($(e.relatedTarget).parent().prev().text().trim());
+                $('#cateId').val($(e.relatedTarget).attr('v-id'));
             }
 
+        })
+        // 给模态框中的新增或编辑分类
+        $('#add_edit').click(function () {
+            if ($('#add_edit').text() == '新增') {
+
+                var flName = $('#recipient-name').val().trim();
+                var bmName = $('#message-text').val().trim();
+                if (flName == '' || bmName == '') {
+                    alert('内容不能为为空！');
+                    return;
+                }
+                $.ajax({
+                    type: 'post',
+                    url: BigNew.category_add,
+                    data: {
+                        name: flName,
+                        slug: bmName
+                    },
+                    success: function (backData) {
+                        if (backData.code == 201) {
+                            alert('新增成功');
+                            getData();
+                            $('#recipient-name').val('');
+                            $('#message-text').val('');
+                            $('#myModal').modal('hide');
+                        }
+                    }
+                })
+
+            } else {
+                $.ajax({
+                    type: 'post',
+                    url: BigNew.category_edit,
+                    data: {
+                        name: $('#recipient-name').val(),
+                        slug: $('#message-text').val(),
+                        id: $('#cateId').val()
+                    },
+                    success: function (backData) {
+                        if (backData.code == 200) {
+                            alert('编辑成功');
+                            $('#myModal').modal('hide');
+                            window.location.reload();
+                        } else {
+                            alert(backData.msg);
+                        };
+                    }
+                })
+            }
+        })
+        // 删除文章类别
+        $('tbody').on('click', '.btn-xs', function () {
+            $.ajax({
+                url: BigNew.category_delete,
+                type: 'post',
+                // dataType: 'json',
+                data: {
+                    id: $(this).attr('v-id')
+                },
+                success: function (backData) {
+                    if (confirm('是否删除？')) {
+                        if (backData.code == 204) {
+                            alert('删除成功');
+                            window.location.reload();
+                        } else {
+                            alert(backData.msg);
+                        }
+                    }
+                }
+            });
         })
     })
 </script>
