@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="./css/iconfont.css">
     <link rel="stylesheet" href="./css/main.css">
     <script src="./libs/jquery-1.12.4.min.js"></script>
+    <script src="./libs/http.js"></script>
     <!-- 引入模板引擎js文件 -->
     <script src="./libs/template-web.js"></script>
 </head>
@@ -73,5 +74,28 @@
         </div>
     </div>
 </body>
+<script id='wzlb' type="text/html">
+    <option value="">所有分类</option>
+{{each data v}}
+                   <option value="{{v.id}}">{{v.name}}</option>
+{{/each}}
+</script>
+<script>
+    $(function () {
+        $.ajax({
+            type: 'get',
+            url: BigNew.category_list,
+            success: function (backData) {
+                console.log(backData);
+
+                if (backData.code == 200) {
+                    var wzHtml = template('wzlb', backData);
+                    $('#selCategory').html(wzHtml);
+                }
+
+            }
+        })
+    })
+</script>
 
 </html>
