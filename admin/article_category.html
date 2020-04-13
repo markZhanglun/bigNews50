@@ -37,7 +37,7 @@
                         <td>funny</td>
                         <td class="text-center">
                             <a href="javascript:void(0)" data-toggle="modal" class=" btn btn-info btn-xs">编辑</a>
-                            <a href="javascript:void(0)" class="btn btn-danger btn-xs">删除</a>
+                            <a href="javascript:void(0)" class="btn btn-danger btn-xs del-xs">删除</a>
                         </td>
                     </tr>
                 </tbody>
@@ -63,14 +63,14 @@
                 </div>
                 <div class="modal-body">
                     <form id="form">
-                        <input type="hidden" name="cateId" id="cateId">
+                        <input type="hidden" name="id" id="cateId">
                         <div class="form-group">
                             <label for="recipient-name" class="control-label">分类名称:</label>
-                            <input type="text" class="form-control" id="recipient-name">
+                            <input type="text" class="form-control" name="name" id="recipient-name">
                         </div>
                         <div class="form-group">
                             <label for="message-text" class="control-label">分类别名:</label>
-                            <input class="form-control" id="message-text"></input>
+                            <input class="form-control" name="slug" id="message-text"></input>
                         </div>
                     </form>
                 </div>
@@ -89,7 +89,7 @@
                         <td>{{v.slug}}</td>
                         <td class="text-center">
                             <a href="javascript:void(0)" data-toggle="modal" class=" btn btn-info btn-xs" data-target="#myModal" v-id={{v.id}}>编辑</a>
-                            <a href="javascript:void(0)" class="btn btn-danger btn-xs" v-id={{v.id}}>删除</a>
+                            <a href="javascript:void(0)" class="btn btn-danger btn-xs del-xs" v-id={{v.id}}>删除</a>
                         </td>
                     </tr>
 {{/each}}
@@ -159,14 +159,12 @@
                 })
 
             } else {
+                // serialize方法form表单里面带有name属性的标签的值取出来, 组成key = value & key2=value2这种格式的字符串.
+                var data = $('#form').serialize();
                 $.ajax({
                     type: 'post',
                     url: BigNew.category_edit,
-                    data: {
-                        name: $('#recipient-name').val(),
-                        slug: $('#message-text').val(),
-                        id: $('#cateId').val()
-                    },
+                    data: data,
                     success: function (backData) {
                         if (backData.code == 200) {
                             alert('编辑成功');
@@ -180,7 +178,7 @@
             }
         })
         // 删除文章类别
-        $('tbody').on('click', '.btn-xs', function () {
+        $('tbody').on('click', '.del-xs', function () {
             $.ajax({
                 url: BigNew.category_delete,
                 type: 'post',
