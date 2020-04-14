@@ -125,7 +125,7 @@
                     type: $('#selCategory').val().trim(),
                     state: $('#selStatus').val().trim(),
                     page: myPage,
-                    perpage: 8
+                    perpage: 3
                 },
                 success: function (backData) {
                     // 3.第三次渲染
@@ -134,11 +134,15 @@
                         var resHtml = template('wzss', backData);
                         $('tbody').html(resHtml);
                         if (backData.data.data.length != 0 && callback != null) {
-                            $('#pagination').show().next().hide();
+                            $('#pagination').show().next('p').hide();
                             callback(backData);
 
-                        } else {
-                            $('#pagination').hide().next().show();
+                        } else if (backData.data.data.length == 0 && dqPage == 1) {
+                            $('#pagination').hide().next('p').show();
+                        } else if (backData.data.totalPage == dqPage - 1 && backData.data.data.length == 0) {
+                            dqPage -= 1;
+                            $('#pagination').twbsPagination('changeTotalPages',
+                                backData.data.totalPage, dqPage);
                         }
 
                     }
@@ -146,7 +150,8 @@
             })
         }
         // 获取默认所有状态和类别的文章内容   
-
+        // 用变量接收当前页
+        var dqPage;
         getData(1, function (backData) {
             //分页插件
             $('#pagination').twbsPagination({
@@ -160,7 +165,7 @@
                 onPageClick: function (event, page) {
                     //console.log(page); //当前点击的页数.
                     //点击 页码数 重新发送ajax请求获取文章列表
-
+                    dqPage = page;
                     getData(page, null);
                 }
             });
@@ -170,7 +175,7 @@
         // 筛选
         $('#btnSearch').click(function (e) {
             e.preventDefault();
-
+            dqPage = 1;
             getData(1, function (backData) {
                 //***************************
                 //改变了筛选条件,那总页数就有可能发生了改变
@@ -179,6 +184,32 @@
                     backData.data.totalPage, 1);
             })
 
+        })
+        // 文章删除
+        $('tbody').on('click', '.delete', function () {
+            var delId = $(this).attr('ss-id');
+            if (confirm("确定删除？")) {
+                $.ajax({
+                    type: 'post',
+                    url: BigNew.article_delete,
+                    data: {
+                        id: delId
+                    },
+                    success: function (backData) {
+                        console.log(backData);
+                        if (backData.code == 204) {
+                            getData(dqPage, function (backData) {
+                                //删除成功,要重新加载数据. 
+                                //由于删除了数据,那总的页码就有可能减少
+                                //那就应该根据新的总页码 重新生成 分页结构
+                                $('#pagination').twbsPagination('changeTotalPages',
+                                    backData.data.totalPage, dqPage);
+                            });
+                        }
+
+                    }
+                })
+            }
         })
     })
 </script>
